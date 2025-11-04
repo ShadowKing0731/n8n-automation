@@ -1,18 +1,20 @@
 services:
   - type: web
-    name: dhanush-n8n
+    name: dhanush-n8n 
     env: docker
     region: oregon
     plan: free
     dockerfilePath: Dockerfile
     envVars:
       - key: N8N_HOST
-        value: dhanush-n8n.onrender.com
+        value: dhanush-n8n.onrender.com         
       - key: WEBHOOK_TUNNEL_URL
-        value: https://dhanush-n8n.onrender.com
+        value: https://dhanush-n8n.onrender.com   
       - key: DB_TYPE
         value: sqlite
       - key: DB_SQLITE_POOL_SIZE
         value: "1"
       - key: N8N_RUNNERS_ENABLED
         value: "true"
+      - key: N8N_BLOCK_ENV_ACCESS_IN_NODE
+        value: "false"  
