@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: n8n-automation
+    name: dhanush-n8n
     env: docker
     region: oregon
     plan: free
