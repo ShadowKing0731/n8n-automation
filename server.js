@@ -1,8 +1,8 @@
 import express from "express"
 import cors from "cors"
+import axios from "axios"
 import http from "http"
 import { Server } from "socket.io"
-import axios from "axios"
 import si from "systeminformation"
 
 const app = express()
@@ -13,48 +13,47 @@ const io = new Server(server,{cors:{origin:"*"}})
 
 const N8N_URL = "https://n8n-latest-z1mo.onrender.com"
 
-app.get("/n8n/workflows", async (req,res)=>{
-    try{
-        const r = await axios.get(`${N8N_URL}/rest/workflows`)
-        res.json(r.data)
-    }catch(e){
-        res.json({error:e.message})
-    }
-})
+async function getServerStats(){
 
-app.get("/n8n/executions", async (req,res)=>{
-    try{
-        const r = await axios.get(`${N8N_URL}/rest/executions`)
-        res.json(r.data)
-    }catch(e){
-        res.json({error:e.message})
-    }
-})
+ const cpu = await si.currentLoad()
+ const mem = await si.mem()
 
-app.get("/server/stats", async (req,res)=>{
-    const cpu = await si.currentLoad()
-    const mem = await si.mem()
+ return {
+  cpu:cpu.currentLoad.toFixed(2),
+  ram:((mem.used/mem.total)*100).toFixed(2)
+ }
 
-    res.json({
-        cpu:cpu.currentLoad,
-        ram:(mem.used/mem.total*100)
-    })
-})
+}
+
+async function getExecutions(){
+
+ try{
+  const res = await axios.get(`${N8N_URL}/rest/executions`)
+  return res.data
+ }catch{
+  return []
+ }
+
+}
 
 io.on("connection",(socket)=>{
 
-    setInterval(async ()=>{
-        const cpu = await si.currentLoad()
-        const mem = await si.mem()
+ console.log("dashboard connected")
 
-        socket.emit("server",{
-            cpu:cpu.currentLoad,
-            ram:(mem.used/mem.total*100)
-        })
-    },3000)
+ setInterval(async()=>{
+
+  const stats = await getServerStats()
+  const executions = await getExecutions()
+
+  socket.emit("stats",stats)
+  socket.emit("executions",executions)
+
+ },4000)
 
 })
 
 server.listen(3000,()=>{
-console.log("Monitoring server running")
+
+ console.log("MASS monitor running")
+
 })
