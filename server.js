@@ -1,63 +1,60 @@
-const express = require("express")
-const axios = require("axios")
-const http = require("http")
-const {Server} = require("socket.io")
+import express from "express"
+import cors from "cors"
+import http from "http"
+import { Server } from "socket.io"
+import axios from "axios"
+import si from "systeminformation"
 
 const app = express()
+app.use(cors())
+
 const server = http.createServer(app)
-const io = new Server(server)
+const io = new Server(server,{cors:{origin:"*"}})
 
 const N8N_URL = "https://n8n-latest-z1mo.onrender.com"
 
-app.get("/workflows", async(req,res)=>{
-
-try{
-
-const response = await axios.get(`${N8N_URL}/rest/workflows`)
-
-res.json(response.data)
-
-}catch(e){
-
-res.json({error:"cannot reach n8n"})
-
-}
-
+app.get("/n8n/workflows", async (req,res)=>{
+    try{
+        const r = await axios.get(`${N8N_URL}/rest/workflows`)
+        res.json(r.data)
+    }catch(e){
+        res.json({error:e.message})
+    }
 })
 
-app.get("/executions", async(req,res)=>{
+app.get("/n8n/executions", async (req,res)=>{
+    try{
+        const r = await axios.get(`${N8N_URL}/rest/executions`)
+        res.json(r.data)
+    }catch(e){
+        res.json({error:e.message})
+    }
+})
 
-try{
+app.get("/server/stats", async (req,res)=>{
+    const cpu = await si.currentLoad()
+    const mem = await si.mem()
 
-const response = await axios.get(`${N8N_URL}/rest/executions`)
-
-res.json(response.data)
-
-}catch(e){
-
-res.json({error:"execution fetch failed"})
-
-}
-
+    res.json({
+        cpu:cpu.currentLoad,
+        ram:(mem.used/mem.total*100)
+    })
 })
 
 io.on("connection",(socket)=>{
 
-console.log("dashboard connected")
+    setInterval(async ()=>{
+        const cpu = await si.currentLoad()
+        const mem = await si.mem()
 
-setInterval(()=>{
-
-socket.emit("log",{
-time:new Date().toLocaleTimeString(),
-message:"Monitoring running"
-})
-
-},2000)
+        socket.emit("server",{
+            cpu:cpu.currentLoad,
+            ram:(mem.used/mem.total*100)
+        })
+    },3000)
 
 })
 
 server.listen(3000,()=>{
-
-console.log("Monitor running on port 3000")
-
+console.log("Monitoring server running")
 })
