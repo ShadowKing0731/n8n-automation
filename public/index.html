@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>MASS Automation Cloud</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h2>MASS Cloud</h2>
+
+<button onclick="openN8N()">Automation (n8n)</button>
+
+<button onclick="openCron()">Cron Jobs</button>
+
+</div>
+
+<div class="main">
+
+<h1>Automation Control Center</h1>
+
+<div class="grid">
+
+<div class="card">
+
+<h3>Server CPU / RAM</h3>
+
+<canvas id="serverChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>Workflow Success / Failure</h3>
+
+<canvas id="workflowChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>Logs</h3>
+
+<div id="logs"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
